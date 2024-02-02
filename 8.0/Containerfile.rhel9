@@ -27,7 +27,7 @@ is probably as a replacement for CGI scripts."
 LABEL summary="${SUMMARY}" \
       description="${DESCRIPTION}" \
       io.k8s.description="${DESCRIPTION}" \
-      io.k8s.display-name="Apache 2.4 with PHP ${PHP_VERSION}" \
+      io.k8s.display-name="nGinx with PHP-FPM ${PHP_VERSION}" \
       io.openshift.expose-services="8080:http" \
       io.openshift.tags="builder,${NAME},${NAME}${PHP_VER_SHORT},${NAME}-${PHP_VER_SHORT}" \
       io.openshift.s2i.scripts-url="image:///usr/libexec/s2i" \
@@ -41,7 +41,7 @@ LABEL summary="${SUMMARY}" \
       maintainer="SoftwareCollections.org <sclorg@redhat.com>"
 
 # Install Apache httpd and PHP
-ARG INSTALL_PKGS="php php-fpm php-mysqlnd php-pgsql php-bcmath \
+ARG INSTALL_PKGS="php-cli php-fpm php-mysqlnd php-pgsql php-bcmath \
                   php-gd php-intl php-ldap php-mbstring php-pdo \
                   php-process php-soap php-opcache php-xml \
                   php-gmp php-pecl-apcu php-pecl-zip mod_ssl hostname"
