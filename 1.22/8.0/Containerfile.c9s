@@ -40,19 +40,6 @@ LABEL summary="${SUMMARY}" \
       usage="s2i build https://github.com/sclorg/s2i-php-container.git --context-dir=${PHP_VERSION}/test/test-app sclorg/${NAME}-${PHP_VER_SHORT}-c9s sample-server" \
       maintainer="SoftwareCollections.org <sclorg@redhat.com>"
 
-# Install Apache httpd and PHP
-ARG INSTALL_PKGS="php php-fpm php-mysqlnd php-pgsql php-bcmath \
-                  php-gd php-intl php-ldap php-mbstring php-pdo \
-                  php-process php-soap php-opcache php-xml \
-                  php-gmp php-pecl-apcu php-pecl-zip hostname \
-                  nss_wrapper bind-utils gettext nginx nginx-all-modules"
-
-RUN yum install -y --setopt=tsflags=nodocs $INSTALL_PKGS && \
-    yum reinstall -y tzdata && \
-    rpm -V $INSTALL_PKGS && \
-    php -v | grep -qe "v$PHP_VERSION\." && echo "Found VERSION $PHP_VERSION" && \
-    yum -y clean all --enablerepo='*'
-
 ENV PHP_CONTAINER_SCRIPTS_PATH=/usr/share/container-scripts/php/ \
     APP_DATA=${APP_ROOT}/src \
     PHP_DEFAULT_INCLUDE_PATH=/usr/share/pear \
@@ -63,14 +50,28 @@ ENV PHP_CONTAINER_SCRIPTS_PATH=/usr/share/container-scripts/php/ \
     PHP_FPM_RUN_DIR=/run/php-fpm \
     PHP_MAIN_FPM_CONF_FILE=/etc/php-fpm.conf \
     PHP_FPM_LOG_PATH=/var/log/php-fpm \
-    HTTPD_CONFIGURATION_PATH=${APP_ROOT}/etc/conf.d \
-    HTTPD_MAIN_CONF_PATH=/etc/httpd/conf \
-    HTTPD_MAIN_CONF_D_PATH=/etc/httpd/conf.d \
-    HTTPD_MODULES_CONF_D_PATH=/etc/httpd/conf.modules.d \
-    HTTPD_VAR_RUN=/var/run/httpd \
-    HTTPD_DATA_PATH=/var/www \
-    HTTPD_DATA_ORIG_PATH=/var/www \
-    HTTPD_VAR_PATH=/var
+    NGINX_CONFIGURATION_PATH=${APP_ROOT}/etc/nginx.d \
+    NGINX_CONF_PATH=/etc/nginx/nginx.conf \
+    NGINX_DEFAULT_CONF_PATH=${APP_ROOT}/etc/nginx.default.d \
+    NGINX_CONTAINER_SCRIPTS_PATH=/usr/share/container-scripts/nginx \
+    NGINX_APP_ROOT=${APP_ROOT} \
+    NGINX_LOG_PATH=/var/log/nginx \
+    NGINX_PERL_MODULE_PATH=${APP_ROOT}/etc/perl
+
+# Install nGinx and PHP
+ARG INSTALL_PKGS="php-cli php-fpm php-mysqlnd php-pgsql php-bcmath \
+                  php-gd php-intl php-ldap php-mbstring php-pdo \
+                  php-process php-soap php-opcache php-xml php-pecl-yaml \
+                  php-gmp php-pecl-apcu php-pecl-zip hostname \
+                  nss_wrapper bind-utils gettext nginx nginx-all-modules git"
+
+RUN dnf -y module enable nginx:$NGINX_VERSION && \
+    dnf install -y --setopt=tsflags=nodocs $INSTALL_PKGS && \
+    dnf reinstall -y tzdata && \
+    rpm -V $INSTALL_PKGS && \
+    php -v | grep -qe "v$PHP_VERSION\." && echo "Found VERSION $PHP_VERSION" && \
+    nginx -v 2>&1 | grep -qe "nginx/$NGINX_VERSION\." && echo "Found VERSION $NGINX_VERSION" && \
+    dnf -y clean all --enablerepo='*'
 
 # Copy the S2I scripts from the specific language image to $STI_SCRIPTS_PATH
 COPY ./s2i/bin/ $STI_SCRIPTS_PATH
