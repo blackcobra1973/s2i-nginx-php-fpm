@@ -1,23 +1,22 @@
 FROM quay.io/sclorg/s2i-base-c9s:c9s
 
-# This image provides an Apache+PHP environment for running PHP
+# This image provides an nGinx+PHP-FPM environment for running PHP
 # applications.
 
 EXPOSE 8080
 EXPOSE 8443
 
-# Description
-# This image provides an Apache 2.4 + PHP 7.4 environment for running PHP applications.
-# Exposed ports:
-# * 8080 - alternative port for http
-
 ENV PHP_VERSION=8.0 \
     PHP_VER_SHORT=80 \
-    NAME=php
+    NAME=nginx \
+    NGINX_VERSION=1.22 \
+    NGINX_SHORT_VER=122 \
+    PERL_SCL_SHORT_VER=530 \
+    VERSION=0
 
-ENV SUMMARY="Platform for building and running PHP $PHP_VERSION applications" \
-    DESCRIPTION="PHP $PHP_VERSION available as container is a base platform for \
-building and running various PHP $PHP_VERSION applications and frameworks. \
+ENV SUMMARY="Platform for building and running PHP-FPM $PHP_VERSION applications on nGinx" \
+    DESCRIPTION="PHP-FPM $PHP_VERSION available as container is a base platform for \
+building and running various PHP $PHP_VERSION applications and frameworks on nGinx. \
 PHP is an HTML-embedded scripting language. PHP attempts to make it easy for developers \
 to write dynamically generated web pages. PHP also offers built-in database integration \
 for several commercial and non-commercial database management systems, so writing \
@@ -27,8 +26,9 @@ is probably as a replacement for CGI scripts."
 LABEL summary="${SUMMARY}" \
       description="${DESCRIPTION}" \
       io.k8s.description="${DESCRIPTION}" \
-      io.k8s.display-name="Apache 2.4 with PHP ${PHP_VERSION}" \
+      io.k8s.display-name="nGinx ${NGINX_VERSION} with PHP-FPM ${PHP_VERSION}" \
       io.openshift.expose-services="8080:http" \
+      io.openshift.expose-services="8443:https" \
       io.openshift.tags="builder,${NAME},${NAME}${PHP_VER_SHORT},${NAME}-${PHP_VER_SHORT}" \
       io.openshift.s2i.scripts-url="image:///usr/libexec/s2i" \
       io.s2i.scripts-url="image:///usr/libexec/s2i" \
@@ -44,7 +44,8 @@ LABEL summary="${SUMMARY}" \
 ARG INSTALL_PKGS="php php-fpm php-mysqlnd php-pgsql php-bcmath \
                   php-gd php-intl php-ldap php-mbstring php-pdo \
                   php-process php-soap php-opcache php-xml \
-                  php-gmp php-pecl-apcu php-pecl-zip mod_ssl hostname"
+                  php-gmp php-pecl-apcu php-pecl-zip hostname \
+                  nss_wrapper bind-utils gettext nginx nginx-all-modules"
 
 RUN yum install -y --setopt=tsflags=nodocs $INSTALL_PKGS && \
     yum reinstall -y tzdata && \
