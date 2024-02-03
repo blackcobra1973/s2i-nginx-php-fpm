@@ -61,7 +61,7 @@ ENV PHP_CONTAINER_SCRIPTS_PATH=/usr/share/container-scripts/php/ \
 # Install nGinx and PHP
 ARG INSTALL_PKGS="php-cli php-fpm php-mysqlnd php-pgsql php-bcmath \
                   php-gd php-intl php-ldap php-mbstring php-pdo \
-                  php-process php-soap php-opcache php-xml php-pecl-yaml \
+                  php-process php-soap php-opcache php-xml \
                   php-gmp php-pecl-apcu php-pecl-zip hostname \
                   nss_wrapper bind-utils gettext nginx nginx-all-modules git"
 
